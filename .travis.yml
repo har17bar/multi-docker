@@ -1,22 +1,24 @@
 sudo: required
-language: generic 
+language: generic
 
 services:
   - docker
 
 before_install:
-  - docker build -t har17bar/react-test -f ./client/Dokcerfile.dev ./client
+  - docker build -t har17bar/react-test -f ./client/Dockerfile.dev ./client
 
 script:
   - docker run -e CI=true har17bar/react-test npm test
 
 after_success:
-  - docker build -t har17bar/multi-nginx ./nginx
   - docker build -t har17bar/multi-client ./client
+  - docker build -t har17bar/multi-nginx ./nginx
   - docker build -t har17bar/multi-server ./server
   - docker build -t har17bar/multi-worker ./worker
-  - echo "$DOCKER_PASSWORD"  | docker login -u "$DOCKER_ID" --password-stdin
-  - docker push har17bar/multi-nginx
+  # Log in to the docker CLI
+  - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_ID" --password-stdin
+  # Take those images and push them to docker hub
   - docker push har17bar/multi-client
+  - docker push har17bar/multi-nginx
   - docker push har17bar/multi-server
   - docker push har17bar/multi-worker
